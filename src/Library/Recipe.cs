@@ -16,6 +16,8 @@ namespace Full_GRASP_And_SOLID
 
         public Product FinalProduct { get; set; }
 
+        public bool Cooked { get; private set;} = false;
+
         // Agregado por Creator
         public void AddStep(Product input, double quantity, Equipment equipment, int time)
         {
@@ -46,6 +48,8 @@ namespace Full_GRASP_And_SOLID
 
             // Agregado por Expert
             result = result + $"Costo de producción: {this.GetProductionCost()}";
+            result = result + $"Tiempo de cocción: {this.GetCookTime()}";
+            result = result + $"Esta cocido? {this.Cooked}";
 
             return result;
         }
@@ -61,6 +65,42 @@ namespace Full_GRASP_And_SOLID
             }
 
             return result;
+        }
+
+
+        public int GetCookTime()
+        {
+            int totalCookTime = 0;
+
+            foreach (BaseStep step in this.steps)
+            {
+                totalCookTime += step.Time;
+            }
+
+            return totalCookTime;
+        }
+
+        public void Cook()
+        {
+            this.Cooked=false;
+            int cooktime = GetCookTime();
+            RecipeAdapter recipeAdapter = new RecipeAdapter(this);
+            CountdownTimer countdownTimer = new CountdownTimer();
+            countdownTimer.Register(cooktime, recipeAdapter); 
+        }
+
+        public class RecipeAdapter : TimerClient
+        {
+            private Recipe recipe ;
+            public RecipeAdapter (Recipe recipe)
+            {
+                this.recipe=recipe;
+            }
+
+            public void TimeOut()
+            {
+                this.recipe.Cooked = true;
+            }
         }
     }
 }
